@@ -1,12 +1,10 @@
 FROM python:3.10-bookworm
 
-RUN --mount=type=cache,target=/root/.cache/pip \
-    --mount=type=bind,source=requirements.txt,target=requirements.txt \
-    python3 -m pip install -r requirements.txt
+WORKDIR /app
 
-COPY object_classifier object_classifier
-COPY setup.py setup.py
-COPY dog.jpg dog.jpg
-RUN ["python3", "setup.py"]
+COPY sut/ObjectClassifier/consumer/requirements.txt requirements.txt
+RUN python3 -m pip install --no-cache-dir -r requirements.txt
 
-CMD python3 object_classifier/consumer.py
+COPY sut/ObjectClassifier/consumer/object_classifier object_classifier
+
+CMD ["python3", "object_classifier/consumer.py"]

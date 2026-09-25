@@ -9,7 +9,7 @@ model = ResNet50V2(weights="imagenet")
 ResNet101V2(weights="imagenet")
 ResNet152V2(weights="imagenet")
 
-img = Image.open("dog.jpg")
+img = Image.open("../../image-detection/producer/example/n02085620-Chihuahua/dog.jpg")
 x = image.img_to_array(img.resize((224, 224), Image.Resampling.LANCZOS))
 x = np.expand_dims(x, axis=0)
 x = preprocess_input(x)

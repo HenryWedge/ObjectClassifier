@@ -6,13 +6,18 @@ class ClassificationReporter:
             ingestion_time,
             processed_time,
             actual_label,
-            prediction
+            prediction,
+            matched
         ):
         self.event_time = event_time
         self.ingestion_time = ingestion_time
         self.processed_time = processed_time
         self.actual_label = actual_label
         self.prediction = prediction
+        self.matched = matched
+        self.inference_time = self.get_inference_time()
+        self.processing_time = self.get_processing_time()
+        self.queueing_delay = self.get_queueing_delay()
 
     def get_inference_time(self):
         return self.processed_time - self.ingestion_time
@@ -24,4 +29,4 @@ class ClassificationReporter:
         return self.ingestion_time - self.event_time
 
     def is_correctly_classified(self):
-        return self.actual_label == self.prediction
+        return self.matched
