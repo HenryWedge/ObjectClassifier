@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: object-classifier-data-extract
+  namespace: object-classifier
+spec:
+  backoffLimit: 1
+  template:
+    metadata:
+      labels:
+        app: object-classifier-data-extract
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: extract
+          image: object-classifier-data:local
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - >-
+              rm -rf /images/* &&
+              mkdir -p /images &&
+              tar -xf /data/images.tar -C /images --strip-components=1 &&
+              ls -la /images
+          volumeMounts:
+            - name: images-volume
+              mountPath: /images
+      volumes:
+        - name: images-volume
+          persistentVolumeClaim:
+            claimName: object-classifier-images

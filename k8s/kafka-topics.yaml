@@ -1,0 +1,28 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: dog-input
+  namespace: object-classifier
+  labels:
+    strimzi.io/cluster: object-classifier-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    retention.ms: 604800000
+    segment.bytes: 1073741824
+
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: reporter
+  namespace: object-classifier
+  labels:
+    strimzi.io/cluster: object-classifier-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    retention.ms: 604800000
+    segment.bytes: 1073741824

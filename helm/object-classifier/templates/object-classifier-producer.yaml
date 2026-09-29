@@ -1,0 +1,60 @@
+{{- if .Values.producer.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: object-classifier-producer
+  namespace: {{ include "object-classifier.namespace" . }}
+  labels:
+    {{- include "object-classifier.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.producer.replicas }}
+  selector:
+    matchLabels:
+      app: object-classifier-producer
+  template:
+    metadata:
+      labels:
+        app: object-classifier-producer
+    spec:
+      initContainers:
+        - name: extract-images
+          image: {{ include "object-classifier.producerInitImage" . }}
+          imagePullPolicy: {{ .Values.producer.initImage.pullPolicy }}
+          command:
+            - /bin/sh
+            - -c
+            - >-
+              rm -rf /data/images/* &&
+              mkdir -p /data/images &&
+              tar -xf /data/images.tar -C /data/images --strip-components=1 &&
+              ls -la /data/images
+          volumeMounts:
+            - name: images-volume
+              mountPath: /data/images
+      containers:
+        - name: producer
+          image: {{ include "object-classifier.producerImage" . }}
+          imagePullPolicy: {{ .Values.producer.image.pullPolicy }}
+          env:
+            - name: BOOTSTRAP_SERVER
+              value: {{ default (include "object-classifier.kafkaBootstrapService" .) .Values.producer.bootstrapServer | quote }}
+            - name: TOPIC
+              value: {{ .Values.producer.topic | quote }}
+            - name: EXAMPLES_DIR
+              value: {{ .Values.producer.examplesDir | quote }}
+            - name: SEED
+              value: {{ .Values.producer.seed | quote }}
+            - name: SEND_INTERVAL_SECONDS
+              value: {{ .Values.producer.sendIntervalSeconds | quote }}
+            - name: PYTHONUNBUFFERED
+              value: "1"
+          volumeMounts:
+            - name: images-volume
+              mountPath: {{ .Values.producer.examplesDir }}
+          resources:
+            {{- toYaml .Values.producer.resources | nindent 12 }}
+      volumes:
+        - name: images-volume
+          persistentVolumeClaim:
+            claimName: {{ .Values.imagesPvc.name }}
+{{- end }}

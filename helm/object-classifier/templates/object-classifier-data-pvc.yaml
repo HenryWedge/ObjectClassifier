@@ -1,0 +1,15 @@
+{{- if .Values.imagesPvc.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.imagesPvc.name }}
+  namespace: {{ include "object-classifier.namespace" . }}
+  labels:
+    {{- include "object-classifier.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.imagesPvc.storage }}
+{{- end }}

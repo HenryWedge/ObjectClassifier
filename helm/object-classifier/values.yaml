@@ -1,0 +1,108 @@
+nameOverride: ""
+fullnameOverride: ""
+
+namespace:
+  create: true
+
+strimzi:
+  enabled: true
+
+kafka:
+  enabled: true
+  name: kafka
+  version: 4.3.0
+  metadataVersion: 4.3-IV0
+  listeners:
+    internal:
+      enabled: true
+      name: plain
+      port: 9092
+      tls: false
+    external:
+      enabled: true
+      name: external
+      port: 9094
+      tls: false
+      nodePortBootstrap: 32092
+      nodePortBroker0: 32093
+  config:
+    offsetsTopicReplicationFactor: 1
+    transactionStateLogReplicationFactor: 1
+    transactionStateLogMinIsr: 1
+    defaultReplicationFactor: 1
+    minInSyncReplicas: 1
+    interBrokerProtocolVersion: "4.3"
+  nodePools:
+    enabled: true
+    broker:
+      name: broker-pool
+      replicas: 1
+    controller:
+      name: controller-pool
+      replicas: 1
+
+topics:
+  enabled: true
+  dogInput:
+    name: dog-input
+    partitions: 1
+    replicas: 1
+    retentionMs: 604800000
+    segmentBytes: 1073741824
+  reporter:
+    name: reporter
+    partitions: 1
+    replicas: 1
+    retentionMs: 604800000
+    segmentBytes: 1073741824
+
+imagesPvc:
+  enabled: true
+  name: object-classifier-images
+  storage: 4Gi
+
+consumer:
+  enabled: true
+  replicas: 1
+  image:
+    repository: ecoscape/object-classifier-consumer
+    tag: local
+    pullPolicy: IfNotPresent
+  bootstrapServer: ""
+  topic: dog-input
+  reporterTopic: reporter
+  groupId: object-classifier-group
+  modelDepth: "50"
+  maxPollRecords: "20"
+  service:
+    port: 5001
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: "2"
+      memory: 3Gi
+
+producer:
+  enabled: true
+  replicas: 1
+  image:
+    repository: ecoscape/object-classifier-producer
+    tag: local
+    pullPolicy: IfNotPresent
+  initImage:
+    repository: ecoscape/object-classifier-data
+    pullPolicy: IfNotPresent
+  bootstrapServer: ""
+  topic: dog-input
+  examplesDir: /data/images
+  seed: "42"
+  sendIntervalSeconds: "1.0"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi

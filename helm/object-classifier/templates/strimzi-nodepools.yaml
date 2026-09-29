@@ -1,0 +1,40 @@
+{{- if and .Values.kafka.enabled .Values.kafka.nodePools.enabled }}
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaNodePool
+metadata:
+  name: {{ .Values.kafka.nodePools.broker.name }}
+  namespace: {{ include "object-classifier.namespace" . }}
+  labels:
+    {{- include "object-classifier.labels" . | nindent 4 }}
+    strimzi.io/cluster: {{ .Values.kafka.name }}
+spec:
+  replicas: {{ .Values.kafka.nodePools.broker.replicas }}
+  roles:
+    - broker
+  storage:
+    type: jbod
+    volumes:
+      - id: 0
+        type: ephemeral
+        kraftMetadata: shared
+
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaNodePool
+metadata:
+  name: {{ .Values.kafka.nodePools.controller.name }}
+  namespace: {{ include "object-classifier.namespace" . }}
+  labels:
+    {{- include "object-classifier.labels" . | nindent 4 }}
+    strimzi.io/cluster: {{ .Values.kafka.name }}
+spec:
+  replicas: {{ .Values.kafka.nodePools.controller.replicas }}
+  roles:
+    - controller
+  storage:
+    type: jbod
+    volumes:
+      - id: 0
+        type: ephemeral
+        kraftMetadata: shared
+{{- end }}

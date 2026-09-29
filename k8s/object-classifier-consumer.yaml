@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: object-classifier-consumer
+  namespace: object-classifier
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: object-classifier-consumer
+  template:
+    metadata:
+      labels:
+        app: object-classifier-consumer
+    spec:
+      containers:
+        - name: consumer
+          image: object-classifier-consumer:local
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: BOOTSTRAP_SERVER
+              value: object-classifier-kafka-kafka-bootstrap.object-classifier.svc.cluster.local:9092
+            - name: TOPICS
+              value: dog-input
+            - name: REPORTER_TOPIC
+              value: reporter
+            - name: GROUP_ID
+              value: object-classifier-group
+            - name: MODEL_DEPTH
+              value: "50"
+            - name: MAX_POLL_RECORDS
+              value: "20"
+          ports:
+            - name: metrics
+              containerPort: 5001
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2"
+              memory: "3Gi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: object-classifier-consumer
+  namespace: object-classifier
+spec:
+  selector:
+    app: object-classifier-consumer
+  ports:
+    - name: http
+      port: 5001
+      targetPort: 5001

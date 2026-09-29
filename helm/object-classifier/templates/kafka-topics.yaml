@@ -1,0 +1,32 @@
+{{- if and .Values.kafka.enabled .Values.topics.enabled }}
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: {{ .Values.topics.dogInput.name }}
+  namespace: {{ include "object-classifier.namespace" . }}
+  labels:
+    {{- include "object-classifier.labels" . | nindent 4 }}
+    strimzi.io/cluster: {{ .Values.kafka.name }}
+spec:
+  partitions: {{ .Values.topics.dogInput.partitions }}
+  replicas: {{ .Values.topics.dogInput.replicas }}
+  config:
+    retention.ms: {{ .Values.topics.dogInput.retentionMs }}
+    segment.bytes: {{ .Values.topics.dogInput.segmentBytes }}
+
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: {{ .Values.topics.reporter.name }}
+  namespace: {{ include "object-classifier.namespace" . }}
+  labels:
+    {{- include "object-classifier.labels" . | nindent 4 }}
+    strimzi.io/cluster: {{ .Values.kafka.name }}
+spec:
+  partitions: {{ .Values.topics.reporter.partitions }}
+  replicas: {{ .Values.topics.reporter.replicas }}
+  config:
+    retention.ms: {{ .Values.topics.reporter.retentionMs }}
+    segment.bytes: {{ .Values.topics.reporter.segmentBytes }}
+{{- end }}

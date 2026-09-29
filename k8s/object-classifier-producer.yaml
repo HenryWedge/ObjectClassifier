@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: object-classifier-producer
+  namespace: object-classifier
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: object-classifier-producer
+  template:
+    metadata:
+      labels:
+        app: object-classifier-producer
+    spec:
+      containers:
+        - name: producer
+          image: object-classifier-producer:local
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: BOOTSTRAP_SERVER
+              value: object-classifier-kafka-kafka-bootstrap.object-classifier.svc.cluster.local:9092
+            - name: TOPIC
+              value: dog-input
+            - name: EXAMPLES_DIR
+              value: /data/images
+            - name: SEED
+              value: "42"
+            - name: SEND_INTERVAL_SECONDS
+              value: "1.0"
+          volumeMounts:
+            - name: images-volume
+              mountPath: /data/images
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+      volumes:
+        - name: images-volume
+          persistentVolumeClaim:
+            claimName: object-classifier-images

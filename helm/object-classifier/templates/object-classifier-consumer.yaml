@@ -1,0 +1,59 @@
+{{- if .Values.consumer.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: object-classifier-consumer
+  namespace: {{ include "object-classifier.namespace" . }}
+  labels:
+    {{- include "object-classifier.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.consumer.replicas }}
+  selector:
+    matchLabels:
+      app: object-classifier-consumer
+  template:
+    metadata:
+      labels:
+        app: object-classifier-consumer
+    spec:
+      containers:
+        - name: consumer
+          image: {{ include "object-classifier.consumerImage" . }}
+          imagePullPolicy: {{ .Values.consumer.image.pullPolicy }}
+          env:
+            - name: BOOTSTRAP_SERVER
+              value: {{ default (include "object-classifier.kafkaBootstrapService" .) .Values.consumer.bootstrapServer | quote }}
+            - name: TOPICS
+              value: {{ .Values.consumer.topic | quote }}
+            - name: REPORTER_TOPIC
+              value: {{ .Values.consumer.reporterTopic | quote }}
+            - name: GROUP_ID
+              value: {{ .Values.consumer.groupId | quote }}
+            - name: MODEL_DEPTH
+              value: {{ .Values.consumer.modelDepth | quote }}
+            - name: MAX_POLL_RECORDS
+              value: {{ .Values.consumer.maxPollRecords | quote }}
+            - name: PYTHONUNBUFFERED
+              value: "1"
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.consumer.service.port }}
+          resources:
+            {{- toYaml .Values.consumer.resources | nindent 12 }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: object-classifier-consumer
+  namespace: {{ include "object-classifier.namespace" . }}
+  labels:
+    {{- include "object-classifier.labels" . | nindent 4 }}
+spec:
+  selector:
+    app: object-classifier-consumer
+  ports:
+    - name: http
+      port: {{ .Values.consumer.service.port }}
+      targetPort: {{ .Values.consumer.service.port }}
+{{- end }}

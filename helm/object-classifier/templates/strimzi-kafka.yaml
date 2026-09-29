@@ -1,0 +1,52 @@
+{{- if .Values.kafka.enabled }}
+apiVersion: kafka.strimzi.io/v1
+kind: Kafka
+metadata:
+  name: {{ .Values.kafka.name }}
+  namespace: {{ include "object-classifier.namespace" . }}
+  labels:
+    {{- include "object-classifier.labels" . | nindent 4 }}
+  annotations:
+    strimzi.io/kraft: enabled
+    strimzi.io/node-pools: enabled
+spec:
+  kafka:
+    version: {{ .Values.kafka.version | quote }}
+    metadataVersion: {{ .Values.kafka.metadataVersion | quote }}
+    template:
+      pod:
+        securityContext:
+          runAsUser: 1001
+          runAsGroup: 1001
+          fsGroup: 1001
+          fsGroupChangePolicy: OnRootMismatch
+    listeners:
+      {{- if .Values.kafka.listeners.internal.enabled }}
+      - name: {{ .Values.kafka.listeners.internal.name }}
+        port: {{ .Values.kafka.listeners.internal.port }}
+        type: internal
+        tls: {{ .Values.kafka.listeners.internal.tls }}
+      {{- end }}
+      {{- if .Values.kafka.listeners.external.enabled }}
+      - name: {{ .Values.kafka.listeners.external.name }}
+        port: {{ .Values.kafka.listeners.external.port }}
+        type: nodeport
+        tls: {{ .Values.kafka.listeners.external.tls }}
+        configuration:
+          bootstrap:
+            nodePort: {{ .Values.kafka.listeners.external.nodePortBootstrap }}
+          brokers:
+            - broker: 0
+              nodePort: {{ .Values.kafka.listeners.external.nodePortBroker0 }}
+      {{- end }}
+    config:
+      offsets.topic.replication.factor: {{ .Values.kafka.config.offsetsTopicReplicationFactor }}
+      transaction.state.log.replication.factor: {{ .Values.kafka.config.transactionStateLogReplicationFactor }}
+      transaction.state.log.min.isr: {{ .Values.kafka.config.transactionStateLogMinIsr }}
+      default.replication.factor: {{ .Values.kafka.config.defaultReplicationFactor }}
+      min.insync.replicas: {{ .Values.kafka.config.minInSyncReplicas }}
+      inter.broker.protocol.version: {{ .Values.kafka.config.interBrokerProtocolVersion | quote }}
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}
+{{- end }}

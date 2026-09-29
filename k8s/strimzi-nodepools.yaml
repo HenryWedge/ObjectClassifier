@@ -1,0 +1,36 @@
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaNodePool
+metadata:
+  name: broker-pool
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  replicas: 1
+  roles:
+    - broker
+  storage:
+    type: jbod
+    volumes:
+      - id: 0
+        type: ephemeral
+        kraftMetadata: shared
+
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaNodePool
+metadata:
+  name: controller-pool
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  replicas: 1
+  roles:
+    - controller
+  storage:
+    type: jbod
+    volumes:
+      - id: 0
+        type: ephemeral
+        kraftMetadata: shared
