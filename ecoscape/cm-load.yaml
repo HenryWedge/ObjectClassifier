@@ -27,6 +27,13 @@ data:
             - name: extract-images
               image: ecoscape/object-classifier-data
               imagePullPolicy: IfNotPresent
+              resources:
+                requests:
+                  cpu: "100m"
+                  memory: "128Mi"
+                limits:
+                  cpu: "500m"
+                  memory: "512Mi"
               command:
                 - /bin/sh
                 - -c

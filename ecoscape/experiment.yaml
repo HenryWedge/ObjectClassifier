@@ -29,14 +29,14 @@ spec:
         name: object-classifier-two-zone-monitor
 
   prometheus:
-    url: "http://prometheus-kube-prometheus-prometheus.monitoring.svc:9090"
+    url: "http://prometheus-kube-prometheus-prometheus.ecoscape.svc:9090"
     queryTimeoutSeconds: 10
 
   slos:
     - name: oc-throughput
       displayName: "Object Classifier Throughput"
       description: "Processed messages per second."
-      query: 'sum(rate(object_classifier_messages_total{namespace="object-classifier-two-zone-cloud"}[2m]))'
+      query: 'sum(rate(object_classifier_messages_total{namespace="object-classifier-two-zone-cloud"}[15s]))'
       threshold: 0.5
       thresholdDirection: GreaterThanOrEqual
       isBiggerBetter: true
@@ -45,7 +45,7 @@ spec:
     - name: oc-accuracy
       displayName: "Object Classifier Accuracy"
       description: "Ratio of exact label matches over all processed messages."
-      query: 'sum(rate(object_classifier_matches_total{namespace="object-classifier-two-zone-cloud"}[2m])) / clamp_min(sum(rate(object_classifier_messages_total{namespace="object-classifier-two-zone-cloud"}[2m])), 1)'
+      query: 'sum(rate(object_classifier_matches_total{namespace="object-classifier-two-zone-cloud"}[15s])) / clamp_min(sum(rate(object_classifier_messages_total{namespace="object-classifier-two-zone-cloud"}[15s])), 1)'
       threshold: 0.60
       thresholdDirection: GreaterThanOrEqual
       isBiggerBetter: true
@@ -54,7 +54,7 @@ spec:
     - name: oc-p95-e2e-latency
       displayName: "Object Classifier P95 End-to-End Latency"
       description: "95th percentile end-to-end latency in seconds."
-      query: 'histogram_quantile(0.95, sum by (le) (rate(object_classifier_end_to_end_latency_seconds_bucket{namespace="object-classifier-two-zone-cloud"}[2m])))'
+      query: 'histogram_quantile(0.95, sum by (le) (rate(object_classifier_end_to_end_latency_seconds_bucket{namespace="object-classifier-two-zone-cloud"}[15s])))'
       threshold: 3.0
       thresholdDirection: LessThanOrEqual
       isBiggerBetter: false
@@ -63,7 +63,7 @@ spec:
     - name: oc-error-rate
       displayName: "Object Classifier Processing Error Rate"
       description: "Processing errors normalized by processed message rate."
-      query: 'sum(rate(object_classifier_processing_errors_total{namespace="object-classifier-two-zone-cloud"}[2m])) / clamp_min(sum(rate(object_classifier_messages_total{namespace="object-classifier-two-zone-cloud"}[2m])), 1)'
+      query: 'sum(rate(object_classifier_processing_errors_total{namespace="object-classifier-two-zone-cloud"}[15s])) / clamp_min(sum(rate(object_classifier_messages_total{namespace="object-classifier-two-zone-cloud"}[15s])), 1)'
       threshold: 0.05
       thresholdDirection: LessThanOrEqual
       isBiggerBetter: false
