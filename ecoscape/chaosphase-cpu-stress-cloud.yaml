@@ -1,0 +1,13 @@
+apiVersion: ecoscape.cau-se.de/v1alpha1
+kind: ChaosPhase
+metadata:
+  name: object-classifier-cpu-stress-cloud
+  namespace: default
+spec:
+  topologyRef:
+    name: object-classifier-two-zone
+  faults:
+    - type: CPUStress
+      zones: [cloud]
+      workers: 2
+      load: 80

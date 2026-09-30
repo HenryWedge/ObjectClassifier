@@ -56,7 +56,7 @@ helm upgrade --install object-classifier ./helm/object-classifier \
 
 ## Runtime notes
 
-- Producer data is extracted from `data/images.tar` by a producer initContainer.
+- Producer data is extracted from `ecoscape/images.tar` by a producer initContainer.
 - Producer and initContainer share the same Pod and PVC, so data is available at `/data/images`.
 - Python logs are unbuffered by default (`PYTHONUNBUFFERED=1`) in producer and consumer.
 
@@ -82,4 +82,30 @@ Open `http://localhost:5001/metrics`.
 ```bash
 helm uninstall object-classifier -n object-classifier
 kubectl delete namespace object-classifier
+```
+
+## GitHub Actions release pipeline
+
+When a tag matching `v*` is pushed, `.github/workflows/release-helm-chart.yml` runs a release job that:
+
+- lints `helm/object-classifier`
+- packages the chart with `version=${tag#v}` and `appVersion=${tag}`
+- pushes the chart to GHCR as OCI artifact: `oci://ghcr.io/<org-or-user>/helm-charts`
+- uploads the `.tgz` package to the GitHub Release
+
+Trigger it with:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+Example install from GHCR OCI registry:
+
+```bash
+helm registry login ghcr.io -u <github-user>
+helm pull oci://ghcr.io/<org-or-user>/helm-charts/object-classifier --version 0.1.0
+helm install object-classifier ./object-classifier-0.1.0.tgz \
+  --version 0.1.0 \
+  -n object-classifier --create-namespace
 ```

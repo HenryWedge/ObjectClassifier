@@ -1,0 +1,23 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: object-classifier-two-zone-monitor
+  namespace: default
+data:
+  01-servicemonitor-consumer.yaml: |
+    apiVersion: monitoring.coreos.com/v1
+    kind: ServiceMonitor
+    metadata:
+      name: object-classifier-consumer
+      namespace: object-classifier-two-zone-cloud
+      labels:
+        app: object-classifier-consumer
+    spec:
+      selector:
+        matchLabels:
+          app: object-classifier-consumer
+      endpoints:
+        - port: http
+          interval: 5s
+          path: /metrics

@@ -1,0 +1,27 @@
+apiVersion: ecoscape.cau-se.de/v1alpha1
+kind: Topology
+metadata:
+  name: object-classifier-two-zone
+  namespace: default
+spec:
+  zones:
+    - name: cloud
+      cpu:
+        limit: "4000m"
+      memory:
+        limit: "8Gi"
+      disk:
+        capacity: "100Gi"
+
+    - name: edge
+      cpu:
+        limit: "2000m"
+      memory:
+        limit: "2Gi"
+      disk:
+        capacity: "20Gi"
+
+  links:
+    - zones: [cloud, edge]
+      latency: "40ms"
+      jitter: "5ms"

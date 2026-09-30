@@ -1,0 +1,71 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: object-classifier-two-zone-load
+  namespace: default
+data:
+  01-producer-deployment.yaml: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: object-classifier-producer
+      namespace: object-classifier-two-zone-edge
+      labels:
+        app: object-classifier-producer
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: object-classifier-producer
+      template:
+        metadata:
+          labels:
+            app: object-classifier-producer
+        spec:
+          initContainers:
+            - name: extract-images
+              image: ecoscape/object-classifier-data
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/sh
+                - -c
+                - >-
+                  rm -rf /data/images/* &&
+                  mkdir -p /data/images &&
+                  tar -xf /data/images.tar -C /data/images --strip-components=1 &&
+                  ls -la /data/images
+              volumeMounts:
+                - name: images-volume
+                  mountPath: /data/images
+          containers:
+            - name: producer
+              image: ecoscape/object-classifier-producer
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: BOOTSTRAP_SERVER
+                  value: "kafka-kafka-bootstrap.object-classifier-two-zone-cloud.svc.cluster.local:9092"
+                - name: TOPIC
+                  value: "dog-input"
+                - name: EXAMPLES_DIR
+                  value: "/data/images"
+                - name: SEED
+                  value: "42"
+                - name: SEND_INTERVAL_SECONDS
+                  value: "1.0"
+                - name: PYTHONUNBUFFERED
+                  value: "1"
+              volumeMounts:
+                - name: images-volume
+                  mountPath: /data/images
+              resources:
+                requests:
+                  cpu: "100m"
+                  memory: "128Mi"
+                limits:
+                  cpu: "500m"
+                  memory: "512Mi"
+          volumes:
+            - name: images-volume
+              persistentVolumeClaim:
+                claimName: object-classifier-images
