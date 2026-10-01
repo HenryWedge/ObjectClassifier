@@ -9,3 +9,4 @@ resources:
   - kafka-topics.yaml
   - object-classifier-consumer.yaml
   - object-classifier-producer.yaml
+  - object-classifier-k6-testrun.yaml

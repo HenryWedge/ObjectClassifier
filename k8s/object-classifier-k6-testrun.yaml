@@ -1,0 +1,45 @@
+apiVersion: k6.io/v1alpha1
+kind: TestRun
+metadata:
+  name: object-classifier-producer
+  namespace: object-classifier-two-zone-edge
+spec:
+  parallelism: 1
+  script:
+    configMap:
+      name: object-classifier-k6-script
+      file: script.js
+  runner:
+    image: ecoscape/object-classifier-loadgen-k6:local
+    imagePullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "500m"
+        memory: "1Gi"
+    env:
+      - name: BOOTSTRAP_SERVER
+        value: kafka-kafka-bootstrap.object-classifier-two-zone-cloud.svc:9092
+      - name: TOPIC
+        value: dog-input
+      - name: ARRIVAL_RATE
+        value: "10"
+      - name: DURATION
+        value: "30m"
+      - name: PRE_ALLOCATED_VUS
+        value: "10"
+      - name: MAX_VUS
+        value: "200"
+      - name: SEED
+        value: "42"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: object-classifier-k6-script
+  namespace: object-classifier-two-zone-edge
+data:
+  script.js: |
+    export { options, setup, default, teardown } from "/app/script.js";
